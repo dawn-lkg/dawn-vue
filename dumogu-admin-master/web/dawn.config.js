@@ -18,7 +18,7 @@ let configDev = {
 let configProd = {
   name: '后台管理',
   title: '最基础的管理端架子 - 智奇管理',
-  baseApiURL: 'http://localhost:8081/api',
+  baseApiURL: 'http://120.27.215.0:8282/',
   routeBasePath: '/',
   biuldBasePath: '/',
 }

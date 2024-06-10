@@ -1,7 +1,5 @@
 <template>
-
   <div style="padding: 20px;" v-loading="loading">
-
     <el-row :gutter="12">
       <el-col :span="12">
         <el-card class="">

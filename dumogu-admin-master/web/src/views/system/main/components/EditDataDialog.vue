@@ -5,51 +5,27 @@
       <el-form :model="dataContainer.form" ref="FormElRef" :inline="true" :rules="dataContainer.rules"
         label-width="100px">
         <el-row :gutter="0">
-          <el-col :span="12" :xs="6">
-            <el-form-item label="用户名称" prop="nickname">
-              <el-input v-model="dataContainer.form.nickname" placeholder="请输入" :disabled="configData.isShow"
-                clearable />
+          <el-col :span="24" :xs="6">
+            <el-form-item label="待办名称" prop="name">
+              <el-input v-model="dataContainer.form.name" placeholder="请输入" :disabled="configData.isShow" clearable />
             </el-form-item>
           </el-col>
-          <el-col :span="12" :xs="6">
-            <el-form-item label="用户账号" prop="username">
-              <el-input v-model="dataContainer.form.username" placeholder="请输入" :disabled="configData.isShow"
-                clearable />
+          <el-col :span="24" :xs="6">
+            <el-form-item label="是否通知" prop="isNotify">
+              <el-switch v-model="dataContainer.form.isNotify" :active-value="0" :inactive-value="1"
+                :disabled="configData.isShow" active-text="是" inactive-text="否" />
             </el-form-item>
           </el-col>
-          <el-col :span="12" :xs="6">
-            <el-form-item label="角色标识" prop="roleIdList">
-              <el-select style="width:100%;" v-model="dataContainer.form.roleIdList" placeholder="请选择"
-                :disabled="configData.isShow" clearable multiple>
-                <el-option v-for="item in configData.roleList" :key="item.value" :label="item.label"
-                  :value="item.value" />
-              </el-select>
+          <el-col :span="24" :xs="6">
+            <el-form-item label="通知时间" prop="notifyTime">
+              <el-date-picker v-model="dataContainer.form.notifyTime" type="datetime" :disabled="configData.isShow"
+                placeholder="请输入" clearable />
             </el-form-item>
           </el-col>
-          <el-col :span="12" :xs="6">
-            <el-form-item label="性别" prop="sex">
-              <el-radio-group v-model="dataContainer.form.sex">
-                <el-radio label="0">男</el-radio>
-                <el-radio label="1">女</el-radio>
-              </el-radio-group>
-            </el-form-item>
-          </el-col>
-          <el-col :span="12" :xs="6">
-            <el-form-item label="手机号" prop="phonenumber">
-              <el-input style="width:100%;" v-model="dataContainer.form.phonenumber" controls-position="right"
-                :disabled="configData.isShow" clearable />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12" :xs="6">
-            <el-form-item label="邮箱" prop="email">
-              <el-input style="width:100%;" v-model="dataContainer.form.email" controls-position="right"
-                :disabled="configData.isShow" clearable />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12" :xs="6">
-            <el-form-item label="状态" prop="status">
-              <el-switch v-model="dataContainer.form.status" active-value="0" inactive-value="1"
-                :disabled="configData.isShow" active-text="启用" inactive-text="禁用" />
+          <el-col :span="24" :xs="6">
+            <el-form-item label="通知内容" prop="description">
+              <el-input v-model="dataContainer.form.description" :rows="2" type="textarea" :disabled="configData.isShow"
+                placeholder="请输入" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -82,7 +58,8 @@ import { mergeObjProperty } from '@/common/OtherTools';
 import { getDictItem, initDataByConfig } from "@/common/OtherTools";
 import { verifiedData } from "@/common/VerifiedTools";
 import { messageError, messageSuccess } from "@/action/MessagePrompt.js";
-import userApi from "@/http/User.js";
+import TodoApi from "@/http/Todo.js";
+import { dayjs } from 'element-plus';
 import { debounceFn } from "@/common/DebounceAndThrottle";
 //配置信息，初始化时使用
 const configMap = {
@@ -90,7 +67,7 @@ const configMap = {
     default: false,
   },
   title: {
-    default: '用户数据',
+    default: '待办数据',
   },
   afterTitle: {
     default: '',
@@ -99,10 +76,9 @@ const configMap = {
     //是否只是展示
     default: false,
   },
-  //角色列表
-  roleList: Array,
-  //是否修改
-  isUpdate: Boolean,
+  isUpdate: {
+    default: false,
+  },
 };
 
 export default defineComponent({
@@ -112,6 +88,7 @@ export default defineComponent({
   setup() {
     const configData = reactive({});
     const FormElRef = ref(null);  //组件实例
+    const TreeElRef = ref(null); //菜单列表实例
     const dataContainer = reactive({
       loading: false,
       closeType: 'close',  //关闭时的类型，是由确认取消按钮关闭的还是其他地方关闭的 confirm cancel
@@ -119,9 +96,7 @@ export default defineComponent({
       reject: undefined,
       form: {},
       rules: {
-        nickname: [{ required: true, message: '请输入用户名称', trigger: 'blur' }],
-        username: [{ required: true, message: '请输入用户账号', trigger: 'blur' }],
-        roleIdList: [{ required: true, message: '请选择角色', trigger: 'blur' }],
+        name: [{ required: true, message: '请输入待办名称', trigger: 'blur' }],
       },
     });
     const otherDataContainer = {
@@ -147,13 +122,9 @@ export default defineComponent({
       initDataByConfig(configData, option, configMap);
       dataContainer.closeType = "close";
       dataContainer.loading = false;
-      dataContainer.form = {};
+      dataContainer.form = data;
       otherDataContainer.castParams = {};
       configData.open = show;
-      nextTick(() => {
-        dataContainer.form = data;
-        // getDataInfo();
-      });
       return new Promise((r, j) => {
         dataContainer.resolve = r;
         dataContainer.reject = j;
@@ -175,7 +146,7 @@ export default defineComponent({
         }
         if (!valid) return;
         debounceFn(function() {
-          userApi[configData.isUpdate ? 'updateData' : 'saveData'](dataContainer.form).then(res => {
+          TodoApi[configData.isUpdate ? 'updateData' : 'saveData']({ ...dataContainer.form, notifyTime: dayjs(dataContainer.form.notifyTime) }).then(res => {
             otherDataContainer.castParams = {
               name: '数据保存成功了，向外部通知',
             };
@@ -184,9 +155,11 @@ export default defineComponent({
             messageSuccess(res.message);
           }).catch(err => {
             messageError(err.message);
-          })
-        }, 300)()
-      });
+          }).finally(() => {
+
+          });
+        }, 300)();
+      })
     }
     /** 
      * 数据验证
@@ -204,6 +177,13 @@ export default defineComponent({
       });
       return failData;
     }
+    /**
+     * 节点改变
+     */
+    function checkChange() {
+
+    }
+
     return {
       configData,
       initData,
@@ -212,7 +192,9 @@ export default defineComponent({
       getDataInfo,
       handleSubmit,
       FormElRef,
+      TreeElRef,
       validData,
+      checkChange
     };
   },
 });

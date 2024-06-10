@@ -7,7 +7,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "vite",
-    "production": "vite dev",
+    "production": "vite --mode production",
     "build": "vite build",
     "preview": "vite preview",
     "to-rem": "node automationScripts/toRem.js"

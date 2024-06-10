@@ -124,6 +124,7 @@ import SvgIcon from "@/components/svgIcon/index.vue";
 import IconSlect from "@/components/IconSlect.vue";
 import { sysMeluList } from "@/router/Common";
 import menuApi from "@/http/Menu.js";
+import { debounceFn } from "@/common/DebounceAndThrottle";
 //配置信息，初始化时使用
 const configMap = {
   open: {
@@ -219,13 +220,15 @@ export default defineComponent({
         }
         if (!valid) return;
         dataContainer.loading = true;
-        menuApi[configData.isUpdate ? 'updateData' : 'saveData'](dataContainer.form).then(res => {
-          otherDataContainer.castParams = res;
-          dataContainer.closeType = 'confirm';
-          configData.open = false;
-          dataContainer.loading = false;
-          messageSuccess(res.message);
-        })
+        debounceFn(function() {
+          menuApi[configData.isUpdate ? 'updateData' : 'saveData'](dataContainer.form).then(res => {
+            otherDataContainer.castParams = res;
+            dataContainer.closeType = 'confirm';
+            configData.open = false;
+            dataContainer.loading = false;
+            messageSuccess(res.message);
+          })
+        }, 300)();
       });
     }
     /** 

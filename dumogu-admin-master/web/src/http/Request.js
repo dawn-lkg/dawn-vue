@@ -33,14 +33,12 @@ let modelShow = false
 service.interceptors.response.use(
   (response) => {
     const data = response.data
-    // console.log(data)
     if (!data) {
       return Promise.reject({
         msg: '请求发生错误',
       })
     }
     const code = data.code
-    console.log(data)
     switch (code) {
       case 0:
         return data

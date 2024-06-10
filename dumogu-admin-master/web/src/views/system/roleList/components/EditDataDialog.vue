@@ -80,6 +80,7 @@ import { getDictItem, initDataByConfig } from "@/common/OtherTools";
 import { verifiedData } from "@/common/VerifiedTools";
 import { messageError, messageSuccess } from "@/action/MessagePrompt.js";
 import roleApi from "@/http/Role.js";
+import { debounceFn } from "@/common/DebounceAndThrottle";
 //配置信息，初始化时使用
 const configMap = {
   open: {
@@ -140,7 +141,6 @@ export default defineComponent({
      *  */
     function initData(show = true, data = {}, option = {}) {
       initDataByConfig(configData, option, configMap);
-      console.log(configData);
       dataContainer.closeType = "close";
       dataContainer.loading = false;
       dataContainer.form = {};
@@ -148,7 +148,6 @@ export default defineComponent({
       configData.open = show;
       nextTick(() => {
         dataContainer.form = data;
-        console.log(TreeElRef);
         let list = [];
         dataContainer.form.menuIdList.forEach(d => {
           //TreeElRef.value.setCheckedKeys(dataContainer.form.menuIdList, true);
@@ -184,18 +183,20 @@ export default defineComponent({
         const checkedKeys = TreeElRef.value.getCheckedKeys();
         const halfCheckedKeys = TreeElRef.value.getHalfCheckedKeys();
         dataContainer.form.menuIdList = checkedKeys.concat(halfCheckedKeys);
-        roleApi[configData.isUpdate ? 'updateData' : 'saveData'](dataContainer.form).then(res => {
-          otherDataContainer.castParams = {
-            name: '数据保存成功了，向外部通知',
-          };
-          dataContainer.closeType = 'confirm';
-          configData.open = false;
-          messageSuccess(res.message);
-        }).catch(err => {
-          console.error(err.message);
-        }).finally(() => {
+        debounceFn(function() {
+          roleApi[configData.isUpdate ? 'updateData' : 'saveData'](dataContainer.form).then(res => {
+            otherDataContainer.castParams = {
+              name: '数据保存成功了，向外部通知',
+            };
+            dataContainer.closeType = 'confirm';
+            configData.open = false;
+            messageSuccess(res.message);
+          }).catch(err => {
+            console.error(err.message);
+          }).finally(() => {
 
-        });
+          });
+        }, 300)();
       });
     }
     /** 

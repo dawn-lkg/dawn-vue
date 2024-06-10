@@ -16,6 +16,13 @@ const allApi = {
       params: param,
     })
   },
+  getRecord(param) {
+    return service({
+      url: '/operation-record/record',
+      method: 'get',
+      params: param,
+    })
+  },
 }
 
 export default allApi

@@ -122,7 +122,6 @@ import { useRouter } from "vue-router";
 import { copyValue } from '@/common/OtherTools';
 import DictTags from '@/components/DictTags.vue';
 import { debounceFn } from "@/common/DebounceAndThrottle";
-import { responseData } from "./common/Data.js";
 import { messageSuccess, confirm } from "@/action/MessagePrompt.js";
 import EditDataDialog from "./components/EditDataDialog.vue";
 import SvgIcon from "@/components/svgIcon/index.vue";
@@ -159,7 +158,6 @@ export default defineComponent({
     const getDataList = debounceFn(function() {
       dataContainer.loading = true;
       roleApi.getDataPage({ ...dataContainer.params, ...dataContainer.form }).then(res => {
-        console.log(res);
         dataContainer.list = res.data.list;
         dataContainer.config.total = res.data.total;
       }).catch(() => {
@@ -174,7 +172,6 @@ export default defineComponent({
       dataContainer.loading = true;
       menuApi.getDataList().then(res => {
         dataContainer.menuList = res.data;
-        console.log(dataContainer);
       }).catch(() => {
         return
       }).finally(() => {
