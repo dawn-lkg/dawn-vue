@@ -21,7 +21,7 @@
     label: 'title',
     value: 'id',
     disabled(data) {
-      return data.treeLevels >= dataContainer.form.treeLevels;
+      return data.treeLevels > dataContainer.form.treeLevels || data.id == dataContainer.form.id;
     },
   }" />
             </el-form-item>

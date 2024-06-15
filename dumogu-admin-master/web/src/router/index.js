@@ -79,6 +79,36 @@ export const constantRoutes = [
         },
       },
       {
+        path: 'novel',
+        component: () => import('@/views/article/novel/index.vue'),
+        children: [
+          {
+            path: '/novel/index',
+            component: () => import('@/views/article/novel/novel.vue'),
+            name: 'novel',
+            meta: {
+              isMenu: true,
+            },
+          },
+          {
+            path: '/novel/novel_chapter',
+            component: () => import('@/views/article/novel/chapter.vue'),
+            name: 'novel-chapter',
+            meta: {
+              isMenu: true,
+            },
+          },
+          {
+            path: '/novel/novel_chapter_content',
+            component: () => import('@/views/article/novel/chapter_content.vue'),
+            name: 'novel-chapter-content',
+            meta: {
+              isMenu: true,
+            },
+          },
+        ],
+      },
+      {
         path: 'abcd',
         component: () => import('@/views/abcd/index.vue'),
         name: 'abcd',

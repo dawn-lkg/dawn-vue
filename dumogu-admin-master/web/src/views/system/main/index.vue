@@ -14,7 +14,7 @@
                     {{ userInfo.nickName }}
                   </div>
                   <div class="userInfo-content-roles">
-                    {{ userInfo.roles.join("|") }}
+                    {{ userInfo?.roles.join("|") }}
                   </div>
                 </div>
               </div>
