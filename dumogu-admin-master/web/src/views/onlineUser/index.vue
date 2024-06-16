@@ -1,81 +1,45 @@
 <template>
   <div class="page-container main-view">
-    <el-row :gutter="0" v-show="dataContainer.showSearch" class="page-query-box">
-      <el-col :span="24" :xs="24">
-        <el-form :model="dataContainer.form" ref="QueryFormRef" :inline="true" label-width="110px">
-          <el-row :gutter="0">
-            <el-col :span="6" :xs="6">
-              <el-form-item label="用户名" prop="nickname">
-                <el-input v-model="dataContainer.form.nickname" placeholder="请输入" clearable @clear="handleQuery"
-                  @keyup.enter="handleQuery" />
-              </el-form-item>
-            </el-col>
-            <el-col :span="6" :xs="6">
-              <el-form-item label=" ">
-                <el-button type="primary" @click="handleQuery">
-                  <SvgIcon :style="'width:15px;height:15px;margin-right:5px;'" name="svg:search-bt.svg"></SvgIcon>
-                  查询
-                </el-button>
-                <el-button @click="resetQuery">
-                  <SvgIcon :style="'width:15px;height:15px;margin-right:5px;'" name="svg:redo.svg"></SvgIcon>
-                  重置
-                </el-button>
-              </el-form-item>
-            </el-col>
-          </el-row>
-        </el-form>
-      </el-col>
-    </el-row>
     <div class="table-box content-container page-content-box">
-      <div class="top-container">
-        <div class="left">
-          <el-button plain type="primary">
-            导出
-          </el-button>
-        </div>
-        <div class="right">
-          <el-button circle @click="resetQuery">
-            <SvgIcon :style="'width:15px;height:15px;'" name="svg:redo.svg"></SvgIcon>
-          </el-button>
-          <el-button circle @click="dataContainer.showSearch = !dataContainer.showSearch">
-            <SvgIcon :style="'width:15px;height:15px;'" name="svg:search-bt.svg"></SvgIcon>
-          </el-button>
-        </div>
-      </div>
       <div class="table-container">
         <el-table v-loading="dataContainer.loading" :data="dataContainer.list" border @cell-dblclick="handleCopyVale"
           height="100%">
           <el-table-column type="index" align="center" label="序号" width="60" fixed="left" />
-          <el-table-column label="用户名" show-overflow-tooltip align="center" min-width="170" prop="username" />
-          <el-table-column label="登录ip" show-overflow-tooltip align="center" min-width="170" prop="ip" />
-          <el-table-column label="归属地" show-overflow-tooltip align="center" min-width="170" prop="ipAddress" />
-          <el-table-column label="操作系统" show-overflow-tooltip align="center" prop="os" min-width="150" />
-          <el-table-column label="浏览器" show-overflow-tooltip align="center" prop="browser" width="150" />
-          <el-table-column label="登录状态" show-overflow-tooltip align="center" prop="status" width="100">
+          <el-table-column label="用户昵称" show-overflow-tooltip align="center" min-width="170" prop="nickname" />
+          <el-table-column label="用户名" show-overflow-tooltip align="center" prop="username" width="150" />
+          <el-table-column label="手机号" show-overflow-tooltip align="center" min-width="170" prop="phonenumber" />
+          <el-table-column label="性别" show-overflow-tooltip align="center" min-width="170">
             <template #default="scope">
-              <el-tag v-if="scope.row.status == '0'">
-                成功
-              </el-tag>
-              <el-tag v-else type="danger">
-                失败
-              </el-tag>
+              <div v-if="scope.row.sex == '0'">
+                男
+              </div>
+              <div v-else>
+                女
+              </div>
             </template>
           </el-table-column>
-          <el-table-column label="操作描述" show-overflow-tooltip align="center" prop="description" width="150" />
-          <el-table-column label="创建时间" show-overflow-tooltip align="center" prop="createTime" min-width="220" />
+          <el-table-column label="邮箱" show-overflow-tooltip align="center" min-width="170" prop="email" />
+          <el-table-column label="浏览器" show-overflow-tooltip align="center" min-width="170" prop="browser" />
+          <el-table-column label="操作系统" show-overflow-tooltip align="center" min-width="170" prop="os" />
+          <el-table-column label="登录ip" show-overflow-tooltip align="center" min-width="170" prop="loginIp" />
+          <el-table-column label="归属地" show-overflow-tooltip align="center" min-width="170" prop="ipAddress" />
+          <el-table-column label="登录时间" show-overflow-tooltip align="center" min-width="170" prop="loginDate" />
           <el-table-column label="操作" width="100" fixed="right" align="center" class-name="small-padding fixed-width">
             <template #default="scope">
-              <el-button :text="true" @click="handleDetails(scope.row, {
+              <el-button type="primary" :text="true" @click="forceOffline(scope.row)">
+                强制下线
+              </el-button>
+              <!-- <el-button :text="true" @click="handleDetails(scope.row, {
       isShow: true,
       afterTitle: ' - 查看',
     })">
                 查看
-              </el-button>
+              </el-button> -->
             </template>
           </el-table-column>
         </el-table>
       </div>
-      <div class="pagination-container">
+      <!-- <div class="pagination-container">
         <el-pagination v-show="true" :total="dataContainer.config.total" :background="true"
           :current-page="dataContainer.params.pageNum" :page-size="dataContainer.params.pageSize"
           layout="total, sizes, prev, pager, next, jumper" :page-sizes="[10, 20, 30, 50]" :pager-count="7" @size-change="size => {
@@ -87,15 +51,15 @@
       getDataList();
     }
       " />
-      </div>
+      </div> -->
     </div>
   </div>
 </template>
 
 <script>
 /**
- * 页面例子
- */
+* 页面例子
+*/
 import { defineComponent, onBeforeUnmount, ref, reactive, getCurrentInstance, onActivated } from 'vue';
 import { useRouter } from "vue-router";
 import { copyValue } from '@/common/OtherTools';
@@ -104,7 +68,7 @@ import { debounceFn } from "@/common/DebounceAndThrottle";
 import { messageSuccess, confirm, messageError } from "@/action/MessagePrompt.js";
 import SvgIcon from "@/components/svgIcon/index.vue";
 import { hasPermi } from "@/action/PowerTools";
-import OptionApi from "@/http/OptionRecord.js";
+import OnlineUserApi from "@/http/OnlineUser.js";
 
 export default defineComponent({
   components: {
@@ -132,9 +96,9 @@ export default defineComponent({
     /** 获取数据列表 */
     const getDataList = debounceFn(function() {
       dataContainer.loading = true;
-      OptionApi.getLoginDataPage({ ...dataContainer.params, ...dataContainer.form }).then(res => {
-        dataContainer.list = res.data.list || [];
-        dataContainer.config.total = res.data.total;
+      OnlineUserApi.getDataList().then(res => {
+        dataContainer.list = res.data || [];
+        console.log(res);
       }).finally(() => {
         dataContainer.loading = false;
       })
@@ -168,6 +132,25 @@ export default defineComponent({
 
       });
     }
+    /**强制下线 */
+    function forceOffline(item) {
+      confirm("确认强制下线" + item.nickname + "?").then(() => {
+        dataContainer.loading = true;
+        OnlineUserApi.offline([item.userId]).then((res => {
+          messageSuccess(res.message);
+        })).catch(err => {
+          messageError(err.message);
+        }).finally(() => {
+          dataContainer.loading = false;
+          getDataList();
+        });
+      }).catch(eror => {
+        messageError(error.message);
+      }).finally(() => {
+        dataContainer.loading = false;
+      })
+
+    }
     return {
       dataContainer,
       getDataList,
@@ -177,6 +160,7 @@ export default defineComponent({
       handleDetails,
       EditDataDialogRef,
       hasPermi,
+      forceOffline
     };
   },
 });

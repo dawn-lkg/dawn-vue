@@ -189,6 +189,14 @@ export const constantRoutes = [
         },
       },
       {
+        path: 'monitor-online-user',
+        component: () => import('@/views/onlineUser/index.vue'),
+        name: 'monitor-online-user',
+        meta: {
+          isMenu: true,
+        },
+      },
+      {
         path: 'icon-list',
         component: () => import('@/views/system/iconList/index.vue'),
         name: 'icon-list',

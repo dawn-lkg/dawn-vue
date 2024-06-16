@@ -53,6 +53,7 @@
           <el-table-column label="请求接口" show-overflow-tooltip align="center" min-width="170" prop="url" />
           <el-table-column label="方法" show-overflow-tooltip align="center" min-width="170" prop="requestMethod" />
           <el-table-column label="登录ip" show-overflow-tooltip align="center" min-width="170" prop="ip" />
+          <el-table-column label="归属地" show-overflow-tooltip align="center" min-width="170" prop="ipAddress" />
           <el-table-column label="操作系统" show-overflow-tooltip align="center" prop="os" min-width="150" />
           <el-table-column label="浏览器" show-overflow-tooltip align="center" prop="browser" width="150" />
           <el-table-column label="登录状态" show-overflow-tooltip align="center" prop="status" width="100">
