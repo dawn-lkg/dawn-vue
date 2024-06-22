@@ -31,16 +31,9 @@ export default defineComponent({
     const userDataStore = userData();
     const router = useRouter();
     const route = useRoute();
+    const code = route.query.code;
     const dataContainer = reactive({
-      form: {
-        username: '',
-        password: '',
-        verifyText: '',
-      },
       loading: false,
-      captchaSvg: '',
-      captchaId: '',
-      loading_1: false,
       img: {
         img_1,
         img_2,
@@ -51,76 +44,11 @@ export default defineComponent({
         img_7,
       },
     });
-    /** 验证信息 */
-    function validBase(data) {
-      const failData = verifiedData(data, {
-        username: {
-          label: '账号 : 不能为空 && 长度1-150',
-          validate(value) {
-            if (!value && value !== 0) return false;
-            value = String(value);
-            if (value.length < 1) return false;
-            if (value.length > 150) return false;
-            return true;
-          },
-        },
-        password: {
-          label: '密码 : 不能为空 && 长度1-150',
-          validate(value) {
-            if (!value && value !== 0) return false;
-            value = String(value);
-            if (value.length < 1) return false;
-            if (value.length > 150) return false;
-            return true;
-          },
-        },
-        verifyText: {
-          label: '验证码 : 不能为空 && 长度1-7',
-          validate(value) {
-            if (!value && value !== 0) return false;
-            value = String(value);
-            if (value.length < 1) return false;
-            if (value.length > 7) return false;
-            return true;
-          },
-        },
-      });
-      return failData;
-    }
-    /** 获取验证码 */
-    const getCaptcha = throttleFn(function() {
-      if (dataContainer.loading_1) return;
-      dataContainer.loading_1 = true;
-      publicApi.getCaptcha().then(res => {
-        const data = res.data || {};
-        dataContainer.verifyCode = data.captchaCode;
-        dataContainer.captchaSvg = data.captchaSvg;
-        dataContainer.form.verifyText = '';
-        dataContainer.form.verifyCode = data.captchaCode;
-      }).catch(() => {
-        messageError('验证码获取失败');
-      }).finally(() => {
-        dataContainer.loading_1 = false;
-      });
-    }, 700);
-    getCaptcha();
-    /** 登录操作 */
-    const onLogin = throttleFn(function(otherParmas) {
-      if (dataContainer.loading) return;
-      const verifiedData = validBase(dataContainer.form);
-      if (verifiedData) {
-        messageError('参数错误！' + verifiedData[0].label);
-        return;
-      };
-      dataContainer.loading = true;
-
-      const params = {
-        ...dataContainer.form,
-        ...otherParmas,
-      };
-      userApi.login(params).then(async res => {
-        let data = res || {};
-        dataContainer.form.password = '';
+    function githubLogin() {
+      userApi.loginGithub(code).then(res => {
+        console.log("login-github");
+        console.log(res);
+        let data = res.data || {};
         /** 写入全局数据 */
         userDataStore.setUserInfo({
           token: data.token || '',
@@ -134,33 +62,16 @@ export default defineComponent({
         if (routeParams.from) {
           router.push(decodeURIComponent(routeParams.from));
         } else {
-          router.push('/');
+          router.push('/main/index');
         }
-      }).catch((res) => {
-        messageError('登录失败：' + res.message);
-      }).finally(() => {
-        dataContainer.loading = false;
-        getCaptcha();
-      });
-    }, 700);
-    /** 去除首尾空格 */
-    function toTrim(data, p) {
-      let str = data[p];
-      str = (str || "").replace(/^\s+|\s+$/g, "");
-      data[p] = str;
+      }).catch(err => {
+        messageError(err.message)
+      }).finally(() => { });
     }
-    /** 去除特殊符号 */
-    function palindrome(data, p) {
-      let str = data[p];
-      str = (str || "").replace(/[`:~!#$%^&*() \+ =<>?"{}|, \/ ;' \\ [ \] ~！#￥%……&*（） \+ ={}|《》？：“”【】、；‘’，。、]/g, "");
-      data[p] = str;
-    }
+    githubLogin();
     return {
       dataContainer,
-      onLogin,
-      getCaptcha,
-      toTrim,
-      palindrome,
+      githubLogin
     };
   },
 });
@@ -215,62 +126,13 @@ export default defineComponent({
       <div class="right">
         <div class="container">
           <div class="title">
-            登 录
+            第三方登录
           </div>
-          <div class="other-login-bt">
-            <div class="item">
-              <a href="https://github.com/login/oauth/authorize?client_id=Ov23li09raH4jFrLkpMY&redirect_uri=http://120.27.215.0:8283/callback&scope=user:email"
-                class="bt">
-                <SvgIcon :style="'width:20px;height:20px;'" name="svg:git-hub.svg"></SvgIcon>
-              </a>
-            </div>
-            <div class="item">
-              <SvgIcon :style="'width:20px;height:20px;'" name="svg:f.svg"></SvgIcon>
-            </div>
-            <div class="item">
-              <SvgIcon :style="'width:20px;height:20px;'" name="svg:weixin.svg"></SvgIcon>
-            </div>
-          </div>
-          <div class="content-1">
-            或使用您的账号
-          </div>
-          <div class="input-container">
-            <SvgIcon :style="'width:20px;height:20px;margin-right:10px;'" name="svg:zhanghao.svg"></SvgIcon>
-            <el-input clearable @input="() => {
-    toTrim(dataContainer.form, 'username');
-    palindrome(dataContainer.form, 'username');
-  }" placeholder="账号" @keyup.enter="onLogin" v-model="dataContainer.form.username" />
-          </div>
-          <div class="input-container">
-            <SvgIcon :style="'width:20px;height:20px;margin-right:10px;'" name="svg:mima.svg"></SvgIcon>
-            <el-input type="password" clearable @keyup.enter="onLogin" show-password placeholder="密码" @input="() => {
-    toTrim(dataContainer.form, 'password');
-  }" v-model="dataContainer.form.password" />
-          </div>
-          <div class="input-container code">
-            <SvgIcon :style="'width:20px;height:20px;margin-right:10px;'" name="svg:cat-code.svg"></SvgIcon>
-            <el-input v-model="dataContainer.form.verifyText" placeholder="验证码" clearable @keyup.enter="onLogin">
-            </el-input>
-            <el-image class="img" :src="dataContainer.captchaSvg" fit="cover" @click="getCaptcha" />
-          </div>
-          <div class="bt-list">
-            <el-button class="login-bt" v-if="!dataContainer.form.idU" :loading="dataContainer.loading"
-              @click="onLogin">
-              登 录
-            </el-button>
-          </div>
-          <div class="other">
-            <router-link to="/register">
-              没有账号？去注册
-            </router-link>
+          <div class="login-loading" v-loading="true" element-loading-text="Loading...">
+
           </div>
         </div>
       </div>
-    </div>
-    <div class="bottom">
-      <a href="https://github.com/wurencaideli/dumogu-admin" target="_blank" class="bt">
-        <SvgIcon :style="'width:60px;height:25px;'" name="svg:github.svg"></SvgIcon>
-      </a>
     </div>
   </div>
 </template>
@@ -422,6 +284,11 @@ export default defineComponent({
         display: flex;
         flex-direction: column;
         align-items: center;
+
+        >.login-loading {
+          width: 100%;
+          height: 383px;
+        }
 
         >.title {
           display: flex;

@@ -11,7 +11,7 @@
                 </div>
                 <div class="userInfo-content">
                   <div class="userInfo-content-nickname">
-                    {{ userInfo.nickName }}
+                    {{ userInfo.nickname }}
                   </div>
                   <div class="userInfo-content-roles">
                     {{ userInfo?.roles?.join("|") }}

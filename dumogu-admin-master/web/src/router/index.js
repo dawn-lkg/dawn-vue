@@ -22,6 +22,10 @@ export const constantRoutes = [
     path: '/login',
     component: () => import('@/views/login/index.vue'),
   },
+  {
+    path: '/callback',
+    component: () => import('@/views/callback/index.vue'),
+  },
   /** 定义首页重定向地址 */
   {
     path: '',

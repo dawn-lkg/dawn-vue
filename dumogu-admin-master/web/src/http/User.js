@@ -12,9 +12,33 @@ const allApi = {
     })
     return res.data
   },
+  loginGithub(code) {
+    return service({
+      url: '/login-github',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'text/plain',
+      },
+      data: code,
+    })
+  },
   getUserInfo() {
     return service({
       url: '/user/info',
+    })
+  },
+  updateUserInfo(userInfo) {
+    return service({
+      url: '/user/update-userInfo',
+      method: 'POST',
+      data: userInfo,
+    })
+  },
+  updatePassword(password) {
+    return service({
+      url: '/user/update-password',
+      method: 'POST',
+      data: password,
     })
   },
   getDataPage(params) {

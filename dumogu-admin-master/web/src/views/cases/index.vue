@@ -9,6 +9,8 @@
 
 <style scoped>
 .container {
+  height: 100%;
+  overflow: scroll;
   padding: 0 40px;
 }
 </style>
